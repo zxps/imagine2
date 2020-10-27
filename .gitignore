@@ -1,0 +1,3 @@
+imagine2.code-workspace
+build/*
+!build/.gitkeep

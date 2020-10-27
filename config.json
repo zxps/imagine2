@@ -1,0 +1,7 @@
+{
+  "Address": "127.0.0.1:8585",
+  "FilesPath": "build/files/original",
+  "CachePath": "build/files/transform",
+  "Database": "steepa:steepa@/skabox?columnsWithAlias=false",
+  "FilesTable": "file"
+}
