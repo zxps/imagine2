@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"imagine2/files"
 	"imagine2/http"
 	"imagine2/storage"
 	"strconv"
@@ -28,8 +29,11 @@ func FileController(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	transforms, _ := files.GetAllFileTransforms(*file)
+
 	http.JSON(ctx, http.JSONResponse{
 		Success: true,
 		File:    file,
+		Stats:   transforms,
 	}, fasthttp.StatusOK)
 }

@@ -14,10 +14,6 @@ import (
 	"time"
 )
 
-const fileNameLength = 8
-const minFileDir = 0
-const maxFileDir = 5
-
 var removeFilenameChars = [5]string{"-", "/", "_", "."}
 
 // FilePartition ...
@@ -120,13 +116,17 @@ func (p *FilePartition) Generate() {
 
 	t := time.Now()
 
-	p.Path = t.Format("2006/02/01")
-	p.Path += strconv.Itoa(utils.RandInt(minFileDir, maxFileDir))
+	p.Path = t.Format(config.Context.Service.GeneratorPathTimePattern)
+	p.Path += strconv.Itoa(
+		utils.RandInt(
+			config.Context.Service.GeneratorMinFileDirIndex,
+			config.Context.Service.GeneratorMaxFileDirIndex),
+	)
 
 	p.Fullpath = p.Fullpath + pathSeparator + p.Path
 
 	for count := 500; count > 0; count-- {
-		token := make([]byte, fileNameLength)
+		token := make([]byte, config.Context.Service.GeneratorFilenameLength)
 
 		rand.Read(token)
 
@@ -139,7 +139,7 @@ func (p *FilePartition) Generate() {
 			p.Name = strings.Replace(p.Name, removeFilenameChars[i], "", 1)
 		}
 
-		p.Name = p.Name[:fileNameLength]
+		p.Name = p.Name[:config.Context.Service.GeneratorFilenameLength]
 		p.Name = strings.ToLower(p.Name)
 
 		if !utils.IsFileExists(p.Fullpath + pathSeparator + p.Name) {

@@ -18,7 +18,9 @@ func UploadController(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	image.LoadImageInfo(p)
+	image.ProcessImagePartition(p, image.ProcessImageOptions{
+		Normalize: true,
+	})
 
 	file, err := storage.CreateFromPartition(p)
 

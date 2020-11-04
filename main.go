@@ -8,18 +8,18 @@ import (
 	"imagine2/utils"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/fasthttp/router"
+	"github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
 
 func main() {
-	configFile := flag.String("c", getDefaultConfigPath(), "configuration file path")
+	configFile := flag.String("c", getDefaultConfigFilepath(), "configuration file path")
+
 	flag.Parse()
 
 	if !utils.IsFileExists(*configFile) {
-		log.Error("config file not found", *configFile)
+		logrus.Error("config not found: ", *configFile)
 		os.Exit(1)
 	}
 
@@ -33,7 +33,7 @@ func initialize(configFile string) {
 }
 
 func initializeStorage() {
-	log.Info("initializing storage")
+	logrus.Info("init storage")
 	storage.Initialize()
 }
 
@@ -42,11 +42,12 @@ func initializeConfig(configFile string) {
 }
 
 func initializeServer() {
-	log.Info("initializing service http router")
+	logrus.Info("init http router")
 	router := router.New()
 
 	router.GET("/", controllers.StatsController)
 	router.POST("/upload", controllers.UploadController)
+	router.POST("/save_base64", controllers.SaveBase64Controller)
 
 	router.GET("/file", controllers.FileController)
 	router.GET("/show", controllers.ShowController)
@@ -54,14 +55,15 @@ func initializeServer() {
 
 	router.GET("/render/{filepath:*}", controllers.RenderController)
 
-	log.Info("bind service to address ", config.Context.Service.Address)
-	log.Fatal(fasthttp.ListenAndServe(config.Context.Service.Address, router.Handler))
+	logrus.Info("bind service to address ", config.Context.Service.ServerAddress)
+
+	logrus.Fatal(fasthttp.ListenAndServe(config.Context.Service.ServerAddress, router.Handler))
 }
 
-func getDefaultConfigPath() string {
+func getDefaultConfigFilepath() string {
 	path, err := os.Getwd()
 	if err != nil {
-		log.Error(err.Error())
+		logrus.Error(err.Error())
 	}
 
 	return path + "/config.json"

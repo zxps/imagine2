@@ -3,8 +3,6 @@ package utils
 import (
 	"math/rand"
 	"os"
-
-	"github.com/sirupsen/logrus"
 )
 
 // IsFileExists - check if file exists
@@ -13,9 +11,6 @@ func IsFileExists(file string) bool {
 	if os.IsNotExist(err) {
 		return false
 	}
-
-	logrus.Info("file is ", file)
-	logrus.Info("info ", err)
 
 	return !info.IsDir()
 }

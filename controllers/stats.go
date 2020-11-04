@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"imagine2/config"
 	"imagine2/http"
 	"runtime"
 
@@ -14,10 +15,14 @@ func StatsController(ctx *fasthttp.RequestCtx) {
 	runtime.ReadMemStats(&m)
 
 	stats := map[string]interface{}{
-		"alloc":       formatBytes(m.Alloc),
-		"total_alloc": formatBytes(m.TotalAlloc),
-		"sys":         formatBytes(m.Sys),
-		"num_gc":      formatBytes(uint64(m.NumGC)),
+		"memory": map[string]interface{}{
+			"alloc":       formatBytes(m.Alloc),
+			"total_alloc": formatBytes(m.TotalAlloc),
+			"sys":         formatBytes(m.Sys),
+			"num_gc":      formatBytes(uint64(m.NumGC)),
+		},
+		"system": m,
+		"config": config.Context,
 	}
 
 	http.JSON(ctx, http.JSONResponse{

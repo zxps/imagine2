@@ -1,6 +1,8 @@
 package files
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
 	"imagine2/utils"
 	"io/ioutil"
@@ -66,6 +68,67 @@ func UploadFileFromRequest(ctx *fasthttp.RequestCtx, name string) (*FilePartitio
 
 	if err := p.SaveFromFile(tempFile.Name()); err != nil {
 		log.Info("unable to save file to p: ", err.Error())
+		os.Remove(tempFile.Name())
+		return p, err
+	}
+
+	os.Remove(tempFile.Name())
+
+	return p, nil
+}
+
+// UploadFileFromBase64 - ...
+func UploadFileFromBase64(data string, name string) (*FilePartition, error) {
+	p := NewFilePartition(name)
+	p.Generate()
+	if !p.Success {
+		return p, errors.New("unable to generate new file p")
+	}
+
+	if _, err := SyncFilePartition(p); err != nil {
+		return p, err
+	}
+
+	tempDir, _ := ioutil.TempDir("", "imagine2")
+	tempFile, err := ioutil.TempFile(tempDir, "upload-*")
+	if err != nil {
+		return p, err
+	}
+
+	defer tempFile.Close()
+
+	idx := strings.Index(data, ";base64,")
+	if idx < 0 {
+		return p, errors.New("invalid file or image from base64 data")
+	}
+
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(data[idx+8:]))
+	buff := bytes.Buffer{}
+	_, err = buff.ReadFrom(reader)
+	if err != nil {
+		return p, err
+	}
+
+	err = ioutil.WriteFile(tempFile.Name(), buff.Bytes(), 0777)
+
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return p, err
+	}
+
+	mime, err := mimetype.DetectFile(tempFile.Name())
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return p, err
+	}
+
+	p.Mime = mime.String()
+	p.Extension = strings.Replace(mime.Extension(), ".", "", 1)
+
+	stats, _ := tempFile.Stat()
+	p.Size = stats.Size()
+
+	if err := p.SaveFromFile(tempFile.Name()); err != nil {
 		os.Remove(tempFile.Name())
 		return p, err
 	}

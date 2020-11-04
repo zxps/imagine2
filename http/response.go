@@ -2,6 +2,7 @@ package http
 
 import (
 	"imagine2/files"
+	"imagine2/image"
 	"imagine2/models"
 	"imagine2/utils"
 	"io"
@@ -25,6 +26,23 @@ func ShowFileResponse(ctx *fasthttp.RequestCtx, file *models.File, code int) {
 	p := files.GetPartitionFromFile(file)
 
 	ShowFilePartitionResponse(ctx, p, code)
+}
+
+// ShowTransformedFileResponse ...
+func ShowTransformedFileResponse(ctx *fasthttp.RequestCtx, transform *files.FileTransform) {
+	err := files.SynchronizePathFromFilename(transform.Target.GetFilepath())
+	if err != nil {
+		Response(ctx, []byte(err.Error()), fasthttp.StatusBadRequest)
+		return
+	}
+
+	err = image.TransformFile(transform)
+	if err != nil {
+		Response(ctx, []byte(err.Error()), fasthttp.StatusBadRequest)
+		return
+	}
+
+	ShowFilePartitionResponse(ctx, transform.Target, fasthttp.StatusOK)
 }
 
 // ShowFilePartitionResponse ...

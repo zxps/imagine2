@@ -1,7 +1,16 @@
 {
-  "Address": "127.0.0.1:8585",
+  "ServerAddress": "127.0.0.1:8585",
+
   "FilesPath": "build/files/original",
   "CachePath": "build/files/transform",
-  "Database": "steepa:steepa@/skabox?columnsWithAlias=false",
-  "FilesTable": "file"
+
+  "DatabaseDSN": "steepa:steepa@/skabox?columnsWithAlias=false",
+  "DatabaseFilesTable": "file",
+
+  "GeneratorPathTimePattern": "2006/02/01",
+  "GeneratorFilenameLength": 8,
+  "GeneratorMinFileDirIndex": 0,
+  "GeneratorMaxFileDirIndex": 5,
+
+  "ImageDefaultQuality": 95
 }

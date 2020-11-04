@@ -1,46 +1,32 @@
 package storage
 
 import (
-	"imagine2/config"
 	"imagine2/files"
 	"imagine2/models"
 	"imagine2/utils"
 
 	"github.com/doug-martin/goqu/v9"
+
 	// Mysql dialect
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 
 	// Mysql driver
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
-
-// DB - database connection
-var DB *sqlx.DB
-
-// Initialize ...
-func Initialize() {
-	connection, err := sqlx.Connect("mysql", config.Context.Service.Database)
-	if err != nil {
-		log.Fatal("unable connect to storage ", err.Error())
-	}
-
-	DB = connection
-}
 
 // GetFileByID - get file
 func GetFileByID(id int) (*models.File, error) {
 	file := &models.File{}
 
 	err := DB.Get(file, `
-		SELECT * FROM `+config.Context.Service.FilesTable+` 
+		SELECT * FROM `+getFilesTable()+` 
 		WHERE id = ? 
 		LIMIT 1
 	`, id)
 
 	if err != nil {
-		log.Warning(err)
+		logrus.Warning(err)
 	}
 
 	return file, err
@@ -56,14 +42,14 @@ func GetFile(path, name string) (*models.File, error) {
 	file := &models.File{}
 
 	err := DB.Get(file, `
-		SELECT * FROM `+config.Context.Service.FilesTable+` 
+		SELECT * FROM `+getFilesTable()+` 
 		WHERE path = ? 
 			AND name = ? 
 		LIMIT 1
 	`, path, name)
 
 	if err != nil {
-		log.Warning(err)
+		logrus.Warning(err)
 	}
 
 	return file, err
@@ -76,7 +62,16 @@ func SaveFile(file *models.File) error {
 
 // DeleteFile ...
 func DeleteFile(id int) error {
-	return nil
+	dialect := goqu.Dialect("mysql")
+	sql, _, err := dialect.Delete(getFilesTable()).Where(goqu.Ex{"id": id}).ToSQL()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = DB.Exec(sql)
+
+	return err
 }
 
 // CreateFromPartition ...
@@ -96,14 +91,18 @@ func CreateFromPartition(p *files.FilePartition) (*models.File, error) {
 	file.Created = utils.StorageTimestamp()
 	file.Updated = utils.StorageTimestamp()
 
+	if file.SourceName == "" {
+		file.SourceName = file.Fullname
+	}
+
 	dialect := goqu.Dialect("mysql")
-	sql, _, err := dialect.Insert(config.Context.Service.FilesTable).Rows(file).ToSQL()
+	sql, _, err := dialect.Insert(getFilesTable()).Rows(file).ToSQL()
 
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("sql insert query ", sql)
+	logrus.Info("sql insert query ", sql)
 
 	result, err := DB.Exec(sql)
 

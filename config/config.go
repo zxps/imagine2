@@ -3,17 +3,27 @@ package config
 import (
 	"os"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tkanos/gonfig"
 )
 
 // ServiceConfig ...
 type ServiceConfig struct {
-	Address    string
-	FilesPath  string
-	CachePath  string
-	Database   string
-	FilesTable string
+	ServerAddress string
+
+	FilesPath string
+	CachePath string
+
+	DatabaseDSN        string
+	DatabaseFilesTable string
+
+	GeneratorPathTimePattern string
+	GeneratorFilenameLength  int
+
+	GeneratorMinFileDirIndex int
+	GeneratorMaxFileDirIndex int
+
+	ImageDefaultQuality int
 }
 
 // ContextConfig ...
@@ -35,11 +45,11 @@ func InitializeConfig(configFile string) {
 
 	rootPath, err := os.Getwd()
 	if err != nil {
-		log.Error("io error. Unable to retrieve root path ", err.Error())
+		logrus.Error("io error. unable to retrieve root path ", err.Error())
 		return
 	}
 
 	Context.RootPath = rootPath
 
-	log.Info("current path ", Context.RootPath)
+	logrus.Info("working path: ", Context.RootPath)
 }

@@ -1,8 +1,12 @@
 package files
 
 import (
+	"imagine2/models"
+	"imagine2/utils"
+	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -12,6 +16,13 @@ var (
 	widthResizePattern          = `/(?P<width>[\d]{1,3})(x)/`
 	heightResizePattern         = `/x(?P<height>[\d]{1,3})/`
 )
+
+// TransformedPartition ...
+type TransformedPartition struct {
+	Name         string `json:"name"`
+	FullFilepath string `json:"full_filepath"`
+	Filesize     int64  `json:"filesize"`
+}
 
 // FileTransform ...
 type FileTransform struct {
@@ -99,4 +110,55 @@ func ExtractTransform(filepath string) *FileTransform {
 	}
 
 	return t
+}
+
+// InvalidateFileTransforms ...
+func InvalidateFileTransforms(file models.File) int {
+	transforms, _ := GetAllFileTransforms(file)
+	resultCount := int(0)
+	for _, transform := range transforms {
+		err := os.Remove(transform.FullFilepath)
+		if err == nil {
+			resultCount++
+		}
+	}
+
+	return resultCount
+}
+
+// GetAllFileTransforms ...
+func GetAllFileTransforms(file models.File) ([]TransformedPartition, error) {
+	cachePath := GetCachePath()
+	sep := string(os.PathSeparator)
+
+	transformPath := cachePath + string(os.PathSeparator) + file.Path
+
+	dirs, err := ioutil.ReadDir(transformPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []TransformedPartition = make([]TransformedPartition, 0)
+	for _, d := range dirs {
+		transformFilePath := cachePath + sep + file.Path + sep + d.Name() + sep + file.Fullname
+		if utils.IsFileExists(transformFilePath) {
+			size := int64(0)
+			stats, err := os.Stat(transformFilePath)
+			if err == nil {
+				size = stats.Size()
+			}
+
+			result = append(result, TransformedPartition{
+				Name:         d.Name(),
+				FullFilepath: transformFilePath,
+				Filesize:     size,
+			})
+		}
+	}
+
+	sort.SliceStable(result, func(i, j int) bool {
+		return result[i].Filesize > result[j].Filesize
+	})
+
+	return result, nil
 }
