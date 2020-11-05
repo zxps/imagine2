@@ -102,8 +102,6 @@ func CreateFromPartition(p *files.FilePartition) (*models.File, error) {
 		return nil, err
 	}
 
-	logrus.Info("sql insert query ", sql)
-
 	result, err := DB.Exec(sql)
 
 	if err == nil {

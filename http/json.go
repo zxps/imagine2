@@ -36,12 +36,21 @@ func JSONSuccess(ctx *fasthttp.RequestCtx) {
 	})
 }
 
-// JSONStatus - send error json response
+// JSONStatus - send json response
 func JSONStatus(ctx *fasthttp.RequestCtx, status string, code int) {
 	writeJSONHeaders(ctx, code)
 	writeJSON(ctx, &JSONResponse{
 		Success: isSuccessResponse(code),
 		Status:  status,
+	})
+}
+
+// JSONError - send error
+func JSONError(ctx *fasthttp.RequestCtx, e error) {
+	writeJSONHeaders(ctx, fasthttp.StatusBadRequest)
+	writeJSON(ctx, &JSONResponse{
+		Success: isSuccessResponse(fasthttp.StatusBadRequest),
+		Status:  e.Error(),
 	})
 }
 

@@ -5,12 +5,13 @@ import (
 	"imagine2/http"
 	"imagine2/image"
 	"imagine2/storage"
+	"imagine2/tasks"
 
 	"github.com/valyala/fasthttp"
 )
 
-// SaveBase64Controller - save(upload) or update a file in storage with base64 data
-func SaveBase64Controller(ctx *fasthttp.RequestCtx) {
+// SaveBase64 - save(upload) or update a file in storage with base64 data
+func SaveBase64(ctx *fasthttp.RequestCtx) {
 	p, err := files.UploadFileFromBase64(
 		string(ctx.FormValue("data")),
 		string(ctx.FormValue("name")),
@@ -33,6 +34,8 @@ func SaveBase64Controller(ctx *fasthttp.RequestCtx) {
 		status = err.Error()
 		code = fasthttp.StatusBadRequest
 	}
+
+	tasks.NotifyFileCreated(*file)
 
 	http.JSONFile(ctx, file, status, code)
 }

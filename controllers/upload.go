@@ -5,12 +5,13 @@ import (
 	"imagine2/http"
 	"imagine2/image"
 	"imagine2/storage"
+	"imagine2/tasks"
 
 	"github.com/valyala/fasthttp"
 )
 
-// UploadController - upload controller
-func UploadController(ctx *fasthttp.RequestCtx) {
+// Upload - upload controller
+func Upload(ctx *fasthttp.RequestCtx) {
 	p, err := files.UploadFileFromRequest(ctx, "file")
 
 	if err != nil {
@@ -30,6 +31,8 @@ func UploadController(ctx *fasthttp.RequestCtx) {
 		status = err.Error()
 		code = fasthttp.StatusBadRequest
 	}
+
+	tasks.NotifyFileCreated(*file)
 
 	http.JSONFile(ctx, file, status, code)
 }

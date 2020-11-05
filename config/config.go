@@ -24,6 +24,8 @@ type ServiceConfig struct {
 	GeneratorMaxFileDirIndex int
 
 	ImageDefaultQuality int
+
+	EnableOptimizator bool
 }
 
 // ContextConfig ...

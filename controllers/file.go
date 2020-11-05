@@ -9,8 +9,8 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// FileController - Get file information
-func FileController(ctx *fasthttp.RequestCtx) {
+// File - Get file information controller
+func File(ctx *fasthttp.RequestCtx) {
 	fileIDParam := string(ctx.FormValue("id"))
 	if len(fileIDParam) < 1 {
 		http.JSONStatus(ctx, "no parameters", fasthttp.StatusBadRequest)

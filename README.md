@@ -20,6 +20,10 @@
   To get file information by id.
   Returns JSON response.
 
+- GET http://localhost:8385/delete?id={file_id}
+  To delete file by id
+  Returns JSON response.
+
 - GET http://localhost:8385/render/{filepath:*}  
   GET Render file by path with or without transformations.
   Returns raw file response with proper content-type header.

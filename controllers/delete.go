@@ -4,16 +4,16 @@ import (
 	"imagine2/files"
 	"imagine2/http"
 	"imagine2/storage"
+	"imagine2/tasks"
+	"os"
 	"strconv"
 
 	"github.com/valyala/fasthttp"
 )
 
-// Show - Show file from storage
-func Show(ctx *fasthttp.RequestCtx) {
+// Delete - Delete file controller
+func Delete(ctx *fasthttp.RequestCtx) {
 	fileIDParam := string(ctx.FormValue("id"))
-	transformParam := string(ctx.FormValue("transform"))
-
 	if len(fileIDParam) < 1 {
 		http.JSONStatus(ctx, "no parameters", fasthttp.StatusBadRequest)
 		return
@@ -31,12 +31,27 @@ func Show(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if len(transformParam) > 0 {
-		transformFilepath := file.Path + "/" + transformParam + "/" + file.Fullname
-		transform := files.ExtractTransform(transformFilepath)
-		ctx.Response.Header.Set("Imagine2-Filepath", transformFilepath)
-		http.ShowTransformedFileResponse(ctx, transform)
-	} else {
-		http.ShowFileResponse(ctx, file, fasthttp.StatusOK)
+	partition := files.GetPartitionFromFile(file)
+
+	err = os.Remove(partition.GetFilepath())
+	if err != nil {
+		http.JSONError(ctx, err)
+		return
 	}
+
+	err = storage.DeleteFile(file.ID)
+	if err != nil {
+		http.JSONError(ctx, err)
+		return
+	}
+
+	transforms, _ := files.GetAllFileTransforms(*file)
+
+	for _, t := range transforms {
+		os.Remove(t.FullFilepath)
+	}
+
+	tasks.NotifyFileDelete(*file)
+
+	http.JSON(ctx, http.JSONResponse{Success: true}, fasthttp.StatusOK)
 }

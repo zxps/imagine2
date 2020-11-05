@@ -7,10 +7,11 @@
   "DatabaseDSN": "steepa:steepa@/skabox?columnsWithAlias=false",
   "DatabaseFilesTable": "file",
 
-  "GeneratorPathTimePattern": "2006/02/01",
+  "GeneratorPathTimePattern": "2006/01/02",
   "GeneratorFilenameLength": 8,
   "GeneratorMinFileDirIndex": 0,
   "GeneratorMaxFileDirIndex": 5,
 
-  "ImageDefaultQuality": 95
+  "ImageDefaultQuality": 95,
+  "EnableOptimizator": false
 }

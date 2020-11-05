@@ -4,6 +4,7 @@ import (
 	"imagine2/files"
 	"imagine2/image"
 	"imagine2/models"
+	"imagine2/tasks"
 	"imagine2/utils"
 	"io"
 	"os"
@@ -73,4 +74,6 @@ func ShowFilePartitionResponse(ctx *fasthttp.RequestCtx, p *files.FilePartition,
 	}
 
 	io.Copy(ctx.Response.BodyWriter(), fileHandle)
+
+	tasks.NotifyPathRendered(filepath)
 }

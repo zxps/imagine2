@@ -5,6 +5,7 @@ import (
 	"imagine2/config"
 	"imagine2/controllers"
 	"imagine2/storage"
+	"imagine2/tasks"
 	"imagine2/utils"
 	"os"
 
@@ -29,6 +30,7 @@ func main() {
 func initialize(configFile string) {
 	initializeConfig(configFile)
 	initializeStorage()
+	initializeTasks()
 	initializeServer()
 }
 
@@ -43,21 +45,38 @@ func initializeConfig(configFile string) {
 
 func initializeServer() {
 	logrus.Info("init http router")
+
 	router := router.New()
 
-	router.GET("/", controllers.StatsController)
-	router.POST("/upload", controllers.UploadController)
-	router.POST("/save_base64", controllers.SaveBase64Controller)
+	router.GET("/", controllers.Stats)
+	router.GET("/file", controllers.File)
+	router.GET("/delete", controllers.Delete)
+	router.GET("/show", controllers.Show)
 
-	router.GET("/file", controllers.FileController)
-	router.GET("/show", controllers.ShowController)
-	router.GET("/file/{filepath:*}", controllers.FileByPathController)
+	router.POST("/upload", controllers.Upload)
+	router.POST("/save_base64", controllers.SaveBase64)
 
-	router.GET("/render/{filepath:*}", controllers.RenderController)
+	router.GET("/render/{filepath:*}", controllers.Render)
 
 	logrus.Info("bind service to address ", config.Context.Service.ServerAddress)
 
-	logrus.Fatal(fasthttp.ListenAndServe(config.Context.Service.ServerAddress, router.Handler))
+	server := &fasthttp.Server{
+		Handler:      router.Handler,
+		Concurrency:  100000,
+		ReadTimeout:  1000000,
+		WriteTimeout: 1000000,
+	}
+
+	err := server.ListenAndServe(config.Context.Service.ServerAddress)
+
+	logrus.Fatal(err)
+}
+
+func initializeTasks() {
+	if config.Context.Service.EnableOptimizator {
+		logrus.Info("start optimizator")
+		tasks.StartOptimizator()
+	}
 }
 
 func getDefaultConfigFilepath() string {

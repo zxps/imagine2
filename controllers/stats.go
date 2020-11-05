@@ -9,8 +9,8 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// StatsController - show application stats
-func StatsController(ctx *fasthttp.RequestCtx) {
+// Stats - show application stats
+func Stats(ctx *fasthttp.RequestCtx) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
@@ -21,9 +21,10 @@ func StatsController(ctx *fasthttp.RequestCtx) {
 			"sys":         formatBytes(m.Sys),
 			"num_gc":      formatBytes(uint64(m.NumGC)),
 		},
-		"system": m,
 		"config": config.Context,
 	}
+
+	runtime.GC()
 
 	http.JSON(ctx, http.JSONResponse{
 		Success: true,
