@@ -12,6 +12,7 @@ import (
 // Render - render file by path
 func Render(ctx *fasthttp.RequestCtx) {
 	filepath := fmt.Sprintf("%v", ctx.UserValue("filepath"))
+
 	if len(filepath) < 1 {
 		http.Response(ctx, []byte(""), fasthttp.StatusBadRequest)
 		return
@@ -19,14 +20,15 @@ func Render(ctx *fasthttp.RequestCtx) {
 
 	transform := files.ExtractTransform(filepath)
 
+	if utils.IsFileExists(transform.Target.GetFilepath()) {
+		http.ShowFilePartitionResponse(ctx, transform.Target, fasthttp.StatusOK)
+		return
+	}
+
 	if !utils.IsFileExists(transform.Source.GetFilepath()) {
 		http.Response(ctx, []byte("file not found"), fasthttp.StatusNotFound)
 		return
 	}
 
-	if utils.IsFileExists(transform.Target.GetFilepath()) {
-		http.ShowFilePartitionResponse(ctx, transform.Target, fasthttp.StatusOK)
-	} else {
-		http.ShowTransformedFileResponse(ctx, transform)
-	}
+	http.ShowTransformedFileResponse(ctx, transform)
 }

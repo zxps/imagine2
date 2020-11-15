@@ -61,10 +61,9 @@ func initializeServer() {
 	logrus.Info("bind service to address ", config.Context.Service.ServerAddress)
 
 	server := &fasthttp.Server{
-		Handler:      router.Handler,
-		Concurrency:  100000,
-		ReadTimeout:  1000000,
-		WriteTimeout: 1000000,
+		Handler:         router.Handler,
+		WriteBufferSize: 2048,
+		ReadBufferSize:  2048,
 	}
 
 	err := server.ListenAndServe(config.Context.Service.ServerAddress)

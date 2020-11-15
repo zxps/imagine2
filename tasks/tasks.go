@@ -44,24 +44,19 @@ func (m *Manager) IsRunning(name string) bool {
 }
 
 // TaskManager ...
-var TaskManager Manager = Manager{
-	Running:       make(map[string]Task),
-	DeletedFileID: make(chan int, 100),
-	CreatedFileID: make(chan int, 100),
-	RenderedPath:  make(chan string, 100),
-}
+var TaskManager Manager = Manager{}
 
 // NotifyFileDelete ...
 func NotifyFileDelete(file models.File) {
-	TaskManager.DeletedFileID <- file.ID
+
 }
 
 // NotifyFileCreated ...
 func NotifyFileCreated(file models.File) {
-	TaskManager.CreatedFileID <- file.ID
+
 }
 
 // NotifyPathRendered ...
 func NotifyPathRendered(path string) {
-	TaskManager.RenderedPath <- path
+
 }
