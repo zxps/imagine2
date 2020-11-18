@@ -12,6 +12,7 @@ type JSONResponse struct {
 	Success bool        `json:"success"`
 	Status  string      `json:"status,omitempty"`
 	File    interface{} `json:"file,omitempty"`
+	Files   interface{} `json:"files,omitempty"`
 	Stats   interface{} `json:"stats,omitempty"`
 }
 

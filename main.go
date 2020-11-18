@@ -50,13 +50,13 @@ func initializeServer() {
 
 	router.GET("/", controllers.Stats)
 	router.GET("/file", controllers.File)
+	router.GET("/files", controllers.FilesController)
 	router.GET("/delete", controllers.Delete)
 	router.GET("/show", controllers.Show)
+	router.GET("/render/{filepath:*}", controllers.Render)
 
 	router.POST("/upload", controllers.Upload)
 	router.POST("/save_base64", controllers.SaveBase64)
-
-	router.GET("/render/{filepath:*}", controllers.Render)
 
 	logrus.Info("bind service to address ", config.Context.Service.ServerAddress)
 

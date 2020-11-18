@@ -29,7 +29,8 @@ func UploadFileFromRequest(ctx *fasthttp.RequestCtx, name string) (*FilePartitio
 		return p, errors.New("unable to generate new file p")
 	}
 
-	if _, err := SyncFilePartition(p); err != nil {
+	err = p.Sync()
+	if err != nil {
 		log.Error("unable to synchronize file p: ", err.Error())
 		return p, err
 	}
@@ -78,48 +79,38 @@ func UploadFileFromRequest(ctx *fasthttp.RequestCtx, name string) (*FilePartitio
 }
 
 // UploadFileFromBase64 - ...
-func UploadFileFromBase64(data string, name string) (*FilePartition, error) {
-	p := NewFilePartition(name)
-	p.Generate()
-	if !p.Success {
-		return p, errors.New("unable to generate new file p")
-	}
-
-	if _, err := SyncFilePartition(p); err != nil {
-		return p, err
-	}
-
+func UploadFileFromBase64(p *FilePartition, data string) error {
 	tempDir, _ := ioutil.TempDir("", "imagine2")
 	tempFile, err := ioutil.TempFile(tempDir, "upload-*")
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	defer tempFile.Close()
 
 	idx := strings.Index(data, ";base64,")
 	if idx < 0 {
-		return p, errors.New("invalid file or image from base64 data")
+		return errors.New("invalid file or image from base64 data")
 	}
 
 	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(data[idx+8:]))
 	buff := bytes.Buffer{}
 	_, err = buff.ReadFrom(reader)
 	if err != nil {
-		return p, err
+		return err
 	}
 
 	err = ioutil.WriteFile(tempFile.Name(), buff.Bytes(), 0777)
 
 	if err != nil {
 		os.Remove(tempFile.Name())
-		return p, err
+		return err
 	}
 
 	mime, err := mimetype.DetectFile(tempFile.Name())
 	if err != nil {
 		os.Remove(tempFile.Name())
-		return p, err
+		return err
 	}
 
 	p.Mime = mime.String()
@@ -130,12 +121,12 @@ func UploadFileFromBase64(data string, name string) (*FilePartition, error) {
 
 	if err := p.SaveFromFile(tempFile.Name()); err != nil {
 		os.Remove(tempFile.Name())
-		return p, err
+		return err
 	}
 
 	os.Remove(tempFile.Name())
 
-	return p, nil
+	return nil
 }
 
 // WriteBytesToFilepath ...

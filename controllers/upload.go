@@ -23,7 +23,8 @@ func Upload(ctx *fasthttp.RequestCtx) {
 		Normalize: true,
 	})
 
-	file, err := storage.CreateFromPartition(p)
+	file := storage.TransformPartitionToFile(p)
+	err = storage.SaveFile(file)
 
 	code := fasthttp.StatusOK
 	status := ""

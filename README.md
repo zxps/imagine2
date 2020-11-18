@@ -20,6 +20,10 @@
   To get file information by id.
   Returns JSON response.
 
+- GET http://localhost:8385/files
+  Get files.
+  Returns JSON response.
+
 - GET http://localhost:8385/delete?id={file_id}
   To delete file by id
   Returns JSON response.

@@ -1,17 +1,22 @@
 package files
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
+	"errors"
 	"imagine2/config"
 	"imagine2/models"
 	"imagine2/utils"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gabriel-vasile/mimetype"
 )
 
 var removeFilenameChars = [5]string{"-", "/", "_", "."}
@@ -109,6 +114,77 @@ func (p *FilePartition) GetFilepath() string {
 	return p.Fullpath + string(os.PathSeparator) + p.Name + "." + p.Extension
 }
 
+// Sync ...
+func (p *FilePartition) Sync() error {
+	if p.Synchronized {
+		return nil
+	}
+	if utils.IsDirExists(p.Fullpath) {
+		return nil
+	}
+
+	err := os.MkdirAll(p.Fullpath, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	p.Synchronized = true
+
+	return nil
+}
+
+// SaveBase64 ...
+func (p *FilePartition) SaveBase64(data string) error {
+	tempDir, _ := ioutil.TempDir("", "imagine2")
+	tempFile, err := ioutil.TempFile(tempDir, "upload-*")
+	if err != nil {
+		return err
+	}
+
+	defer tempFile.Close()
+
+	idx := strings.Index(data, ";base64,")
+	if idx < 0 {
+		return errors.New("invalid file or image from base64 data")
+	}
+
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(data[idx+8:]))
+	buff := bytes.Buffer{}
+	_, err = buff.ReadFrom(reader)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(tempFile.Name(), buff.Bytes(), 0777)
+
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return err
+	}
+
+	mime, err := mimetype.DetectFile(tempFile.Name())
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return err
+	}
+
+	p.Mime = mime.String()
+	p.Extension = strings.Replace(mime.Extension(), ".", "", 1)
+
+	stats, _ := tempFile.Stat()
+	p.Size = stats.Size()
+
+	err = p.SaveFromFile(tempFile.Name())
+	if err != nil {
+		os.Remove(tempFile.Name())
+		return err
+	}
+
+	os.Remove(tempFile.Name())
+
+	return nil
+}
+
 // Generate ...
 func (p *FilePartition) Generate() {
 	pathSeparator := string(os.PathSeparator)
@@ -147,24 +223,6 @@ func (p *FilePartition) Generate() {
 			break
 		}
 	}
-}
-
-// SyncFilePartition ...
-func SyncFilePartition(p *FilePartition) (bool, error) {
-	if p.Synchronized {
-		return true, nil
-	}
-	if utils.IsDirExists(p.Fullpath) {
-		return true, nil
-	}
-
-	err := os.MkdirAll(p.Fullpath, os.ModePerm)
-	if err != nil {
-		return false, err
-	}
-	p.Synchronized = true
-
-	return true, nil
 }
 
 // GetFilespath ...
