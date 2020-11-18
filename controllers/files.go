@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"imagine2/http"
+	"imagine2/models"
 	"imagine2/storage"
 
 	"github.com/valyala/fasthttp"
@@ -9,7 +10,9 @@ import (
 
 // FilesController ...
 func FilesController(ctx *fasthttp.RequestCtx) {
-	files := storage.GetFiles(0, 50, true)
+	files := []models.File{}
+
+	files = *storage.GetFiles(0, 50, true)
 
 	http.JSON(ctx, http.JSONResponse{
 		Success: true,

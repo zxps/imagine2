@@ -6,12 +6,15 @@ import (
 	"imagine2/http"
 	"imagine2/utils"
 
+	"github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
 
 // Render - render file by path
 func Render(ctx *fasthttp.RequestCtx) {
 	filepath := fmt.Sprintf("%v", ctx.UserValue("filepath"))
+
+	logrus.Info("filepath is:", filepath)
 
 	if len(filepath) < 1 {
 		http.Response(ctx, []byte(""), fasthttp.StatusBadRequest)

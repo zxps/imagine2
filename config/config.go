@@ -16,6 +16,7 @@ type ServiceConfig struct {
 
 	DatabaseDSN        string
 	DatabaseFilesTable string
+	DatabaseDialect    string
 
 	GeneratorPathTimePattern string
 	GeneratorFilenameLength  int

@@ -9,7 +9,7 @@
   Returns JSON response.
 
 - POST http://localhost:8385/save_base64 [parameters: data={Base64_Data}&file={filename}]
-  To upload file from base64 data. Create or Update existing file
+  To upload file from base64 data. Create or Update existing file by "id" parameter.
   Returns JSON response.
 
 - GET http://localhost:8385/show [parameters: id={file_id}&transform={transform}]

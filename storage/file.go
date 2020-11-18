@@ -32,7 +32,7 @@ func GetFileByID(id int) (*models.File, error) {
 func GetFiles(lastID int, limit uint, isDescending bool) *[]models.File {
 	var files []models.File
 
-	dialect := goqu.Dialect("mysql")
+	dialect := goqu.Dialect(getDialect())
 	query := dialect.From(getFilesTable())
 
 	if lastID > 0 {
@@ -92,7 +92,7 @@ func GetFile(path, name string) (*models.File, error) {
 
 // SaveFile ...
 func SaveFile(file *models.File) error {
-	dialect := goqu.Dialect("mysql")
+	dialect := goqu.Dialect(getDialect())
 	var sql string
 	var err error
 
@@ -120,7 +120,7 @@ func SaveFile(file *models.File) error {
 
 // DeleteFile ...
 func DeleteFile(id int) error {
-	dialect := goqu.Dialect("mysql")
+	dialect := goqu.Dialect(getDialect())
 	sql, _, err := dialect.Delete(getFilesTable()).Where(goqu.Ex{"id": id}).ToSQL()
 
 	if err != nil {

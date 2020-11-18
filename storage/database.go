@@ -23,3 +23,7 @@ func Initialize() {
 func getFilesTable() string {
 	return config.Context.Service.DatabaseFilesTable
 }
+
+func getDialect() string {
+	return config.Context.Service.DatabaseDialect
+}
